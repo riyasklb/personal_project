@@ -24,8 +24,29 @@ class HomePageController extends StateNotifier<HomePageData> {
           .get("https://pokeapi.co/api/v2/pokemon?limit=20&offset=0");
       if (res != null && res.data != null) {
         PokemonListData data = PokemonListData.fromJson(res.data);
-        state=state.copyWith(data: data);
+        state = state.copyWith(
+          data: data,
+        );
       }
-    } else {}
+      print('first api call');
+    } else {
+      if (state.data?.next != null) {
+        print('new api call');
+        Response? res = await _httpService.get(state.data!.next!);
+        if (res != null && res.data != null) {
+          PokemonListData data = PokemonListData.fromJson(
+            res.data!,
+          );
+          state = state.copyWith(
+            data: data.copyWith(
+              results: [
+                ...?state.data?.results,
+                ...?data.results,
+              ],
+            ),
+          );
+        }
+      }
+    }
   }
 }
